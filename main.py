@@ -7,7 +7,7 @@ import json
 import os
 from datetime import date, timedelta
 
-DATA_FILE = "habits.json"
+DATA_FILE = "data.json"
 
 # ── Збереження даних ────────────────────────────────────────────────────────
 
@@ -138,4 +138,66 @@ def calculate_streak():
         current_date = today
         # Якщо сьогодні ще не відмічено, перевіряємо з учорашнього дня
         if str(today) not in r["checkins"]:
-            current_
+            current_date = today - timedelta(days=1)
+            
+        while str(current_date) in r["checkins"]:
+            streak += 1
+            current_date -= timedelta(days=1)
+            
+        print(f" - {r['name']}: {streak} днів")
+
+def delete_habit():
+    """Додаткова функція: видаляє звичку з трекера."""
+    try:
+        habit_id = int(input("\n ID звички для видалення: ").strip())
+    except ValueError:
+        print(" Помилка: введіть ціле число.")
+        return
+
+    records = load_data()
+    new_records = [r for r in records if r["id"] != habit_id]
+
+    if len(new_records) == len(records):
+        print(" Запис не знайдено.")
+        return
+
+    save_data(new_records)
+    print(" ✓ Звичку видалено.")
+
+# ── Меню ────────────────────────────────────────────────────────────────────
+
+def menu():
+    """Головний цикл програми з текстовим меню."""
+    actions = {
+        "1": add_habit,
+        "2": daily_checkin,
+        "3": weekly_status,
+        "4": calculate_streak,
+        "5": delete_habit,
+    }
+
+    while True:
+        print("\n" + "=" * 40)
+        print(" Трекер звичок")
+        print("=" * 40)
+        print(" 1. Додати нову звичку")
+        print(" 2. Зробити щоденну відмітку")
+        print(" 3. Статус за тиждень (прогрес)")
+        print(" 4. Показати 'стрік' (дні підряд)")
+        print(" 5. Видалити звичку")
+        print(" 0. Вийти")
+        
+        choice = input("\n Ваш вибір: ").strip()
+
+        if choice == "0":
+            print(" Успішного формування звичок! До побачення.")
+            break
+
+        action = actions.get(choice)
+        if action:
+            action()
+        else:
+            print(" Невідома команда. Спробуйте ще раз.")
+
+if __name__ == "__main__":
+    menu()
